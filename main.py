@@ -11,8 +11,6 @@ with sync_playwright() as p:
     pagina.goto('https://chromedino.com/')
     pagina.press('//*[@id="t"]', ' ')
 
-    time_start = time.time()
-
     # TAKE A SCREENSHOT FROM DE COMPONENT IN HTML
     img = Image.open(io.BytesIO(
         pagina.locator('.runner-canvas').screenshot()))
@@ -20,13 +18,17 @@ with sync_playwright() as p:
     # GETTING THE IMAGE SIZE
     width, height = img.size
 
+    time_start = time.time()
+    distance_to_jump = 30
+
     while True:
         # TAKE A SCREENSHOT FROM DE COMPONENT IN HTML
         img = Image.open(io.BytesIO(
             pagina.locator('.runner-canvas').screenshot()))
 
+
         # CROPPING IMAGE IN THE DISTANCE FOR DINO JUMP
-        image = img.crop((width//8 - 5, 0, width*3//8 - 35, height))
+        image = img.crop((width//8-5, 0, width*3//8-distance_to_jump, height))
 
         # CROPPING IMAGE TO VERIFY THE GAME OVER
         end = img.crop((width//4+30, 25, width-width//4-30, height//2))
@@ -50,12 +52,14 @@ with sync_playwright() as p:
             pagina.press('//*[@id="t"]', ' ')
         
         # FOR DARK MODE
-        '''if white_pixels > 4000 and white_pixels < 30000:
+        '''if white_pixels > 1000:
             pagina.press('//*[@id="t"]', ' ')'''
 
         # RESTART THE GAME AFTER LOSE
         if black_pixels_end >= 1752:
             pagina.press('//*[@id="t"]', ' ')
+            distance_to_jump = 30
+            time_start = time.time()
 
         # OPENNING THE CV SCREEN
         cv2.imshow('image', image)
@@ -63,4 +67,10 @@ with sync_playwright() as p:
         # FUNCTION TO UPDATE THE CV SCREEN
         if cv2.waitKey(25) & 0xFF == ord('q'):
             cv2.destroyAllWindows()
+
+        # FUNCTION TO INCREASE THE JUMP AS TIME PASSES
+        if (time.time() - time_start) >= 10:
+            distance_to_jump -= 7
+            time_start = time.time()
+
             
